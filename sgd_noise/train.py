@@ -1,15 +1,15 @@
+from .wgrad import weighted_backward
 import torch
+import torch.nn as nn
+import torch.optim as optim
+from torch.utils.data import DataLoader
 import pandas as pd
 import numpy as np
+from typing import Callable, Union, List, Tuple
 
 
-def weighted_backward(model, losses):
-    for loss in losses:
-        model.alpha = loss / (losses.norm() * np.sqrt(len(losses)))
-        loss.backward(retain_graph=True)
-
-
-def train_one_epoch(model, opt, criterion, dl, wgrad=False):
+def train_one_epoch(model: nn.Module, opt: optim.Optimizer, criterion: nn.Module, dl: DataLoader, wgrad: bool = True) \
+        -> float:
     model_device = next(model.parameters()).device
     runnning_loss = 0
     model.train()
@@ -28,11 +28,14 @@ def train_one_epoch(model, opt, criterion, dl, wgrad=False):
     return runnning_loss / len(dl)
 
 
-def validate_model(model, dl, metrics, save_preds=False):
+def validate_model(model: nn.Module, dl: DataLoader, metrics: Union[List[Callable], Callable],
+                   save_preds: bool = False) -> Union[Tuple[np.ndarray, pd.DataFrame], Tuple[np.ndarray, None]]:
     model_device = next(model.parameters()).device
+
     if not isinstance(metrics, list):
         metrics = [metrics]
     dfs = []
+
     model.eval()
     with torch.inference_mode():
         running_loss = np.zeros(shape=len(metrics))
@@ -50,8 +53,9 @@ def validate_model(model, dl, metrics, save_preds=False):
         return running_loss / len(dl), None
 
 
-def train(model, opt, criterion, epochs, dl, vdl=None, metrics=[], wgrad=False, eval_train_loss=True,
-          print_losses=True):
+def train(model: nn.Module, opt: optim.Optimizer, criterion: nn.Module, epochs: int, dl: DataLoader,
+          vdl: DataLoader = None, metrics: List[Callable] = [], wgrad: bool = False, eval_train_loss: bool = True,
+          print_losses: bool = True) -> Tuple[torch.Tensor, torch.Tensor]:
     if wgrad:
         assert hasattr(model, 'alpha'), 'If wgrad=True, model must be WeightedGradient'
 

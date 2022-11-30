@@ -2,7 +2,6 @@ import torch.nn as nn
 
 
 class Mlp(nn.Module):
-
     def __init__(self, input_size, layer_sizes, output_size, activation=nn.ReLU, final_activation=None,
                  batch_norm=True, batch_norm_init=True):
         assert len(layer_sizes) > 0, "At least one hidden layer required."
