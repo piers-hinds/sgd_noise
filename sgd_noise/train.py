@@ -56,6 +56,27 @@ def validate_model(model: nn.Module, dl: DataLoader, metrics: Union[List[Callabl
 def train(model: nn.Module, opt: optim.Optimizer, criterion: nn.Module, epochs: int, dl: DataLoader,
           vdl: DataLoader = None, metrics: List[Callable] = [], wgrad: bool = False, eval_train_loss: bool = True,
           print_losses: bool = True) -> Tuple[torch.Tensor, torch.Tensor]:
+    """
+    Trains a model
+
+    Args:
+        model (nn.Module): The model to train
+        opt (Optimizer):
+        criterion (nn.Module): The loss function for training, which should have no reduction
+            (criterion.reduction = 'none)
+        epochs (int): The number of epochs for training
+        dl (DataLoader): The DataLoader used for training
+        vdl (DataLoader, optional): The DataLoader used for validation. Default: ``None``
+        metrics (list, optional): List of metrics (callables) used for validation. Default ``[]``
+        wgrad (bool, optional): If set to ``True``, a weighted gradient is used in the training. Default: ``False``.
+        eval_train_loss (bool, optional): If set to ``True``, computes the loss on the training set after the training
+            for the epoch has finished. If set to ``False``, uses the averaged loss during training as the training
+            loss. Default: ``True``
+        print_losses: If set to ``True``, prints the loss values during training. Default: ``True``
+
+    Returns:
+        None
+    """
     if wgrad:
         assert hasattr(model, 'alpha'), 'If wgrad=True, model must be WeightedGradient'
 
