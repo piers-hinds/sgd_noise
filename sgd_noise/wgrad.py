@@ -19,3 +19,11 @@ def weighted_backward(model: nn.Module, losses: torch.Tensor) -> None:
     for loss in losses:
         model.alpha = loss / (losses.norm() * np.sqrt(len(losses)))
         loss.backward(retain_graph=True)
+
+
+def backward_with_rejection(losses: torch.Tensor) -> None:
+    """Takes individual losses, rejects with probability proportional to loss then computes the mean of the accepted
+    losses and backpropogates"""
+    probs = torch.bernoulli(losses / losses.norm())
+    loss = torch.sum(losses * probs) / probs.sum()
+    loss.backward()

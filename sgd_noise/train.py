@@ -1,4 +1,4 @@
-from .wgrad import weighted_backward
+from .wgrad import backward_with_rejection
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -18,7 +18,7 @@ def train_one_epoch(model: nn.Module, opt: optim.Optimizer, criterion: nn.Module
         output = model(x.to(model_device))
         losses = criterion(output, y.to(model_device))
         if wgrad:
-            weighted_backward(model, losses)
+            backward_with_rejection(losses)
             runnning_loss += losses.mean().item()
         else:
             loss = losses.mean()
@@ -77,9 +77,6 @@ def train(model: nn.Module, opt: optim.Optimizer, criterion: nn.Module, epochs: 
     Returns:
         None
     """
-    if wgrad:
-        assert hasattr(model, 'alpha'), 'If wgrad=True, model must be WeightedGradient'
-
     train_losses, val_losses = [], []
 
     for epoch in range(epochs):
